@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import {setupRecorder} from '../public/gps-recorder.js';
+import {geometrySignature} from '../public/gps-track.js';
+const nodes=new Map(),handlers={};const node=id=>{if(!nodes.has(id))nodes.set(id,{disabled:false,hidden:false,value:'',checked:false,scrollIntoView(){}});return nodes.get(id);};
+globalThis.document={getElementById:node,visibilityState:'visible',addEventListener:(n,f)=>handlers[n]=f,querySelector:()=>node('map')};
+globalThis.window={addEventListener(){}};
+const storage=new Map();globalThis.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)};
+globalThis.confirm=()=>true;
+let receive,error,cleared=0,applied=null,locked=false;
+Object.defineProperty(globalThis,'navigator',{value:{geolocation:{watchPosition:(s,e)=>{receive=s;error=e;return 5;},clearWatch:()=>cleared++}},configurable:true});
+const ctx={id:'R1',name:'تجربة',direction:0,color:'#087f76'};
+const recorder=setupRecorder({getContext:()=>ctx,lock:x=>locked=x,preview(){},restoreMap(){},apply:(t,a,b)=>applied={t,a,b}});
+node('gpsStart').onclick();assert(locked);assert(recorder.busy());assert.equal(node('gpsMapStop').hidden,false);
+const time=Date.now();
+for(let i=0;i<3;i++)receive({coords:{latitude:33.51,longitude:36.29+i*.00015,accuracy:5},timestamp:time-6000+i*3000});
+node('gpsStop').onclick();assert.equal(cleared,1);assert.equal(node('gpsMapStop').hidden,true);assert.equal(node('gpsApply').disabled,false);
+node('gpsApply').onclick();assert.equal(applied,null); // names and confirmation required
+node('gpsFrom').value='ساحة البداية';node('gpsTo').value='ساحة النهاية';node('gpsConfirmed').checked=true;node('gpsApply').onclick();
+assert(applied);assert(!locked);assert(!recorder.busy());assert.equal(node('gpsApply').disabled,true);
+recorder.saved({id:'unrelated',directions:[[],[]]});assert.equal(storage.size,1);
+const pts=applied.t.points.map(p=>({...p,name:'انعطاف',stop:false}));
+recorder.saved({id:'R1',directions:[pts,[]]});assert.equal(storage.size,0);
+node('gpsStart').onclick();error({code:1});assert.equal(node('gpsStop').disabled,true);node('gpsDiscard').onclick();assert(!locked);assert(!recorder.busy());
+console.log('GPS lifecycle: start, stop, permission denial, review gate, save/retention and cleanup passed.');

@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {DOCUMENT_ROUTES} from '../public/document-routes.js';
+import {mergeDocumentRoutes,planJourneys} from '../public/network.js';
+import {addTransitStops} from '../public/transit-stops.js';
+const r=structuredClone(DOCUMENT_ROUTES.find(r=>r.directions[0].length>1));
+const legacy={...r,directions:[r.directions[0],structuredClone(r.directions[0]).reverse()]};
+const fixed=mergeDocumentRoutes([legacy]).find(x=>x.id===r.id);
+assert.deepEqual(fixed.directions[1].filter(p=>!p.generatedStop),r.directions[1]);
+assert.notDeepEqual(fixed.directions[1],structuredClone(fixed.directions[0]).reverse());
+assert.deepEqual(addTransitStops(fixed),fixed);
+const changed=structuredClone(legacy);changed.id='personal';changed.directions[0][0].lat+=.0001;
+const pending=mergeDocumentRoutes([changed]).find(x=>x.id==='personal');assert.equal(pending.trafficPending,true);
+assert.ok(planJourneys([pending],pending.directions[0][0],pending.directions[0].at(-1),true).every(t=>t.walkingOnly));
+console.log('Legacy reversed path restored; separate return preserved; unreviewed custom routes excluded.');
