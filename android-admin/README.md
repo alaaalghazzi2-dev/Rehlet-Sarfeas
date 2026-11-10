@@ -1,1 +1,1 @@
-
+Rehlat Sarfees Admin 0.2.0: Android 6+ Custom Tabs launcher, sy.rehlat.sarfees.admin. Opens /admin with independent username/password login. Requires internet and browser; uses no ChatGPT identity. First owner activation uses an out-of-band one-time code, never embedded in APK. Existing prototype signing key retained for upgrade compatibility. This is a browser-backed APK, not an offline/native GPS background service.
