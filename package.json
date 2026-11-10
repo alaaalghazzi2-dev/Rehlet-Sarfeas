@@ -1,0 +1,13 @@
+{
+  "name": "rehlat-sarfees-supabase",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test tests/supabase.test.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.16"
+  },
+  "version": "24.0.0"
+}

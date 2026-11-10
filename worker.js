@@ -1,0 +1,22 @@
+import { SEED,validateRoute,mergeDocumentRoutes } from './public/network.js';
+const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
+export default{async fetch(request,env){const url=new URL(request.url);
+ if(url.pathname.startsWith('/api/auth/')){try{return await handleAuth(request,env,url.pathname);}catch{return authJSON({error:'تعذر الاتصال بخدمة الدخول. حاول لاحقاً.'},503);}}
+ const admin=await authSession(request,env);
+ if(url.pathname==='/admin/setup')return authPage('login');
+ if(url.pathname==='/admin/account')return admin?authPage('change'):authPage('login');
+ if(url.pathname==='/api/session'&&request.method==='GET')return json({admin:!!admin});
+ if(url.pathname==='/admin/import')return admin?importPage():authPage('login');
+ if(url.pathname==='/admin'||url.pathname==='/admin/'){
+   if(!admin)return authPage('login');
+   return new Response(ASSETS['/index.html'].body,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
+ }
+if(url.pathname.startsWith('/api/')){try{if(url.pathname==='/api/admin/import'&&request.method==='POST'){
+ if(!admin)return json({error:'غير مصرح'},403);
+ if(request.headers.get('Origin')!==url.origin||!(request.headers.get('Content-Type')||'').startsWith('application/json'))return json({error:'طلب غير مسموح'},403);
+ let body;try{body=await readJSON(request,15000000);validImport(body.routes);}catch(e){return json({error:e.message},e.status||400);}
+ const current=await sbRead(env);if(current.revision!==0)return json({error:'الاستيراد متاح لقاعدة جديدة فقط. لن تُستبدل خطوط محفوظة.'},409);
+ if(!await sbSave(env,admin.token,body.routes,0))return json({error:'تغيرت القاعدة أثناء الاستيراد'},409);
+ return json({ok:true,revision:1,count:body.routes.length});
+ }
+if(url.pathname==='/api/admin/export'&&request.method==='GET'){if(!admin)return json({error:'غير مصرح'},403);if(!env.SUPABASE_URL||!env.SUPABASE_PUBLISHABLE_KEY)return json({error:'قاعدة البيانات غير متاحة'},503);const data=await sbRead(env);return new Response(JSON.stringify({...data,exportedAt:new Date().toISOString()},null,2),{headers:{'Content-Type':'application/json; charset=utf-8','Content-Disposition':'attachment; filename="rehlat-network-backup.json"','Cache-Control':'no-store'}});}if(!env.SUPABASE_URL||!env.SUPABASE_PUBLISHABLE_KEY)return json({error:'خدمة حفظ الخطوط غير متاحة الآن'},503);if(url.pathname==='/api/network'&&request.method==='GET')return json(await sbRead(env));if(url.pathname==='/api/route'&&request.method==='PUT'){if(!admin)return json({error:'يلزم تسجيل الدخول بحساب الإدارة لحفظ الخطوط'},403);if(request.headers.get('Origin')!==url.origin)return json({error:'طلب غير مسموح'},403);if(!(request.headers.get('Content-Type')||'').startsWith('application/json'))return json({error:'صيغة غير صالحة'},415);let body;try{body=await readJSON(request,600000);validateRoute(body.route);if(!Number.isSafeInteger(body.revision)||body.revision<0)throw Error('رقم الإصدار غير صالح');}catch(e){return json({error:e.message},e.status||400);}const current=await sbRead(env);if(current.revision!==body.revision)return json({error:'تغيرت البيانات على جهاز آخر. انسخ تعديلاتك ثم أعد تحميل الصفحة.'},409);let routes=current.routes;const idx=routes.findIndex(r=>r.id===body.route.id);if(idx>=0)routes[idx]=body.route;else{if(routes.length>=100)return json({error:'بلغت حد ١٠٠ خط في النسخة التجريبية'},400);routes.push(body.route);}if(!await sbSave(env,admin.token,routes,body.revision))return json({error:'تغيرت البيانات أثناء الحفظ. أعد تحميل الصفحة.'},409);return json({revision:body.revision+1});}return json({error:'غير موجود'},404);}catch(e){return json({error:'تعذر حفظ أو تحميل البيانات. حاول لاحقاً.'},503);}}const pathname=url.pathname==='/'?'/index.html':url.pathname;const asset=ASSETS[pathname];if(!asset)return new Response('Not found',{status:404});return new Response(asset.base64?Uint8Array.from(atob(asset.body),c=>c.charCodeAt(0)):asset.body,{headers:{'Content-Type':asset.type,'Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin'}});}};

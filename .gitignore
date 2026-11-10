@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.sites-runtime/
+.wrangler/
+.env
+.env.*
+!.env.example
+.dev.vars
+*.keystore
+*.jks
+backups/
+rehlat-network-backup*.json
