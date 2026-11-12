@@ -1,7 +1,7 @@
 import { SEED,validateRoute,mergeDocumentRoutes } from './public/network.js';
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 export default{async fetch(request,env){const url=new URL(request.url);
- if(url.pathname==='/.well-known/assetlinks.json')return new Response(JSON.stringify([{relation:['delegate_permission/common.handle_all_urls'],target:{namespace:'android_app',dev.workers.alaa_alghazzi2.rehlet_sarfeas.twa:'sy.rehlat.sarfeas',sha256_cert_fingerprints:["64:89:69:37:49:8B:9E:25:EF:AB:5D:6A:09:17:CD:D2:FF:C0:8D:90:B2:81:13:5F:E3:3B:4F:3E:DC:DD:DE:FC"]}}]),{headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
+ if(url.pathname==='/.well-known/assetlinks.json')return new Response(JSON.stringify([{relation:['delegate_permission/common.handle_all_urls'],target:{namespace:'android_app',dev.workers.alaa_alghazzi2.rehlet_sarfeas.twa:'sy.rehlet.sarfeas',sha256_cert_fingerprints:["64:89:69:37:49:8B:9E:25:EF:AB:5D:6A:09:17:CD:D2:FF:C0:8D:90:B2:81:13:5F:E3:3B:4F:3E:DC:DD:DE:FC"]}}]),{headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
  if(url.pathname.startsWith('/api/auth/')){try{return await handleAuth(request,env,url.pathname);}catch{return authJSON({error:'تعذر الاتصال بخدمة الدخول. حاول لاحقاً.'},503);}}
  const admin=await authSession(request,env);
  if(url.pathname==='/admin/setup')return authPage('login');
