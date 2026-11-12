@@ -1,1 +1,33 @@
-{"id": "/", "name": "رحلة سرفيس — Rehlat Sarfees", "short_name": "رحلة سرفيس", "description": "خريطة خطوط السرفيس وتخطيط الرحلات في دمشق", "lang": "ar", "dir": "rtl", "start_url": "/?source=installed", "scope": "/", "display": "standalone", "background_color": "#ffffff", "theme_color": "#f45b3c", "icons": [{"src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"}, {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"}]}
+{
+ "id": "/",
+ "name": "رحلة سرفيس — Rehlat Sarfees",
+ "short_name": "رحلة سرفيس",
+ "description": "خريطة خطوط السرفيس وتخطيط الرحلات في دمشق",
+ "lang": "ar",
+ "dir": "rtl",
+ "start_url": "/?source=installed",
+ "scope": "/",
+ "display": "standalone",
+ "background_color": "#ffffff",
+ "theme_color": "#4da11c",
+ "icons": [
+  {
+   "src": "/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
